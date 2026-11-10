@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#070a16"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><title>معمل الكيمياء الافتراضي</title>
+<style>
+:root{--bg:#070a16;--g:rgba(255,255,255,.06);--b:rgba(255,255,255,.14);--c:#22e5ff;--p:#a855f7;--t:#e8ecff;--m:#9aa3c7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Tahoma,'Segoe UI',sans-serif;color:var(--t);min-height:100vh;background:radial-gradient(circle at 15% 8%,#241049,transparent 45%),radial-gradient(circle at 88% 92%,#06303f,transparent 45%),var(--bg)}
+.glass{background:var(--g);border:1px solid var(--b);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:16px}
+header{position:sticky;top:8px;z-index:9;display:flex;gap:12px;align-items:center;padding:10px 16px;margin:8px}
+header h1{font-size:1.05rem;margin:0;flex:1;background:linear-gradient(90deg,var(--c),var(--p));-webkit-background-clip:text;background-clip:text;color:transparent}
+button{font:inherit;color:var(--t);cursor:pointer;background:var(--g);border:1px solid var(--b);border-radius:10px;padding:7px 13px;transition:.2s}
+button:hover,button.on{border-color:var(--c);box-shadow:0 0 12px rgba(34,229,255,.4);background:rgba(34,229,255,.12)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--c)}
+.wrap{display:flex;gap:10px;margin:8px;align-items:flex-start}
+aside{width:240px;padding:12px;position:sticky;top:76px;max-height:calc(100vh - 90px);overflow:auto;flex-shrink:0}
+aside.hide{display:none}
+aside h3{font-size:.8rem;color:var(--m);margin:12px 4px 6px}
+aside button{display:block;width:100%;text-align:right;margin-bottom:5px;border-color:transparent}
+main{flex:1;min-width:0}
+section{display:none;padding:16px}section.on{display:block}
+h2{margin:0 0 12px;font-size:1.1rem;color:var(--c)}
+.grid{display:grid;grid-template-columns:1fr 250px;gap:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.lbl{font-size:.8rem;color:var(--m);margin-top:8px}
+.out .blk{border-inline-start:3px solid var(--p);padding:6px 12px;margin:10px 0;background:rgba(168,85,247,.07);border-radius:8px}
+.eq{direction:ltr;text-align:left;font-family:'Cambria Math',Georgia,serif;font-size:1.02rem;line-height:1.9;color:#bff6ff;overflow-x:auto}
+.ex{background:rgba(255,224,102,.08);border:1px dashed rgba(255,224,102,.4);border-radius:8px;padding:6px 10px;margin:6px 0 0;font-size:.92rem}
+.ob{margin:4px 0}
+#stage{position:relative;height:420px;display:flex;justify-content:center;align-items:flex-end;direction:ltr}
+#dropper{position:absolute;top:0;left:50%;margin-left:-8px;width:16px;height:60px;border-radius:4px 4px 10px 10px;background:linear-gradient(90deg,#5ad,#cef,#5ad);opacity:0;transition:opacity .4s}
+#stream{position:absolute;top:60px;left:6px;width:4px;height:0;background:rgba(190,240,255,.85);border-radius:2px;transition:height .6s}
+#tube{position:relative;width:96px;height:290px;border:2px solid rgba(255,255,255,.45);border-top:none;border-radius:0 0 48px 48px;overflow:hidden;background:rgba(255,255,255,.05);box-shadow:inset 0 0 22px rgba(255,255,255,.18),0 0 24px rgba(34,229,255,.25)}
+#tube>div{position:absolute;left:0;width:100%;bottom:0}
+#liq{height:45%;background:rgba(150,210,255,.22);transition:height 1s,background 1.6s}
+#cloud{height:45%;opacity:0}
+#ppt{height:0;transition:height 3.5s ease-in;border-radius:0 0 46px 46px}
+#bub{height:100%;pointer-events:none}
+.sc{top:0;left:auto!important;right:0;width:15px!important;height:100%;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.6) 0 1px,transparent 1px 14px);opacity:.7}
+#tube:after{content:"";position:absolute;left:10px;top:0;width:9px;height:100%;background:linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.05));border-radius:6px}
+i.pt{position:absolute;width:4px;height:4px;border-radius:50%;animation:fall 2.6s ease-in forwards}
+i.bb{position:absolute;bottom:4px;width:7px;height:7px;border-radius:50%;border:1px solid rgba(255,255,255,.8);animation:rise 2s ease-out forwards}
+@keyframes fall{to{transform:translateY(190px);opacity:0}}
+@keyframes rise{to{transform:translateY(-230px);opacity:0}}
+canvas{max-width:100%;border-radius:14px;background:#04060d}
+.card{perspective:800px;height:170px;cursor:pointer}
+.card>div{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+.card.fl>div{transform:rotateY(180deg)}
+.card p{position:absolute;inset:0;margin:0;padding:16px;display:flex;align-items:center;justify-content:center;text-align:center;backface-visibility:hidden;border-radius:14px;border:1px solid var(--b);background:rgba(168,85,247,.12);line-height:1.7;overflow:auto}
+.card p+p{transform:rotateY(180deg);background:rgba(34,229,255,.1)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+#bead{transition:fill 1s}
+#bs.hot #bead{filter:drop-shadow(0 0 14px #ff9a2a);animation:pl 1s infinite alternate}
+@keyframes pl{to{filter:drop-shadow(0 0 26px #ffd37a)}}
+@media(max-width:800px){.grid{grid-template-columns:1fr}aside{position:fixed;right:8px;top:70px;z-index:8;background:#0d1226}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<header class="glass"><button id="tg" aria-label="القائمة">☰</button><h1>🧪 معمل الكيمياء الافتراضي — التحليل الوصفي للشقوق القاعدية</h1><button id="dl">⬇ تنزيل التطبيق (HTML)</button></header>
+<div class="wrap"><aside id="sb" class="glass"></aside>
+<main class="glass">
+<section id="s-lab" class="on"><h2>محاكي التحليل الرطب</h2><div class="grid"><div>
+<div class="lbl">١) اختر الكاتيون (الملح)</div><div class="chips" id="cat"></div>
+<div class="lbl">٢) اختر الكاشف</div><div class="chips" id="rea"></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><button id="go" disabled>🧴 اسكب الكاشف</button><button id="nx" style="display:none"></button><button id="rs">↺ أنبوبة جديدة</button></div>
+<div class="out" id="out"></div></div>
+<div id="stage"><div id="dropper"><i id="stream"></i></div><div id="tube"><div id="liq"></div><div id="cloud"></div><div id="ppt"></div><div id="bub"></div><div class="sc"></div></div></div></div></section>
+<section id="s-fl"><h2>محاكي تلوين اللهب</h2><div class="grid" style="grid-template-columns:1fr 300px"><div>
+<div class="lbl">اختر العنصر</div><div class="chips" id="fe"></div>
+<button id="co">🔷 زجاجة الكوبلت: مُعطّلة</button>
+<div class="ex" id="ft" style="margin-top:12px">اللهب الآن لهب بنزن غير مضيء (أزرق باهت). اختر عنصرًا لإدخاله في اللهب.</div></div>
+<canvas id="fc" width="300" height="340"></canvas></div></section>
+<section id="s-bx"><h2>محاكي خرزة البوراكس</h2><div class="grid" style="grid-template-columns:1fr 300px"><div>
+<div class="lbl">اختر الفلز</div><div class="chips" id="be"></div>
+<div class="lbl">نوع اللهب</div><div class="chips"><button id="ox" class="on">لهب مؤكسد</button><button id="rd">لهب مختزل</button><button id="ht">🔥 سخّن الخرزة</button></div>
+<div class="ex" id="bt">اختر فلزًا لتلوين الخرزة.</div></div>
+<svg id="bs" viewBox="0 0 300 300" width="300" style="max-width:100%"><line x1="150" y1="300" x2="150" y2="160" stroke="#cbd2e6" stroke-width="3"/><circle cx="150" cy="130" r="30" fill="none" stroke="#cbd2e6" stroke-width="3"/><circle id="bead" cx="150" cy="130" r="25" fill="rgba(220,235,255,.35)" stroke="rgba(255,255,255,.65)" stroke-width="2"/></svg></div></section>
+<section id="s-qz"><h2>بنك أسئلة «علل» — اضغط على البطاقة لقلبها</h2><div class="cards" id="cards"></div></section>
+</main></div>
+<script>
+const $=id=>document.getElementById(id),f=s=>s.replace(/([A-Za-z\)\]])(\d+)/g,'$1<sub>$2</sub>');
+// ===== البيانات =====
+const C={ag:['الفضة','Ag<sup>+</sup>'],pb:['الرصاص','Pb<sup>2+</sup>'],hg1:['الزئبقوز','Hg2<sup>2+</sup>'],hg2:['الزئبقيك','Hg<sup>2+</sup>'],cu:['النحاسيك','Cu<sup>2+</sup>','#4aa3e8'],cd:['الكادميوم','Cd<sup>2+</sup>'],bi:['البزموث','Bi<sup>3+</sup>'],fe2:['الحديدوز','Fe<sup>2+</sup>','#a8d8a0'],fe3:['الحديديك','Fe<sup>3+</sup>','#e0b840'],al:['الألومنيوم','Al<sup>3+</sup>'],cr:['الكروميك','Cr<sup>3+</sup>','#5a9a6a']};
+// [كاتيون, كاشف, لون الراسب, لون المحلول, المشاهدة, المعادلات, الشرح, مراحل[زر,نمط(d يذوب/c لون راسب/l لون محلول),لون,مشاهدة,معادلات,شرح]]
+const R=[
+['ag','dil. HCl','#f5f5f5',0,'يتكون راسب أبيض من كلوريد الفضة AgCl.',['AgNO3 + HCl → AgCl↓ (أبيض) + HNO3'],'أيون Cl⁻ يتحد مع Ag⁺ فيتجاوز حاصل الأيونات قيمة SP فيترسب AgCl.',[['أضف NH4OH','d',0,'يذوب الراسب مكوّنًا معقد الفضة النشادري الذائب.',['AgCl + 2NH4OH → [Ag(NH3)2]Cl + 2H2O'],'تكوين المعقد يخفض تركيز Ag⁺ تحت حد الإذابة فيذوب الراسب.']]],
+['ag','KI','#f3e27a',0,'راسب أصفر باهت من AgI لا يذوب في NH4OH ويذوب في ثيوكبريتات الصوديوم.',['AgNO3 + KI → AgI↓ (أصفر باهت) + KNO3'],'AgI أقل ذوبانًا من AgCl، لذلك لا يكفي NH4OH لإذابته.',[['أضف Na2S2O3','d',0,'يذوب الراسب بتكوين معقد ثيوكبريتات الفضة.',['AgI + 2Na2S2O3 → Na3[Ag(S2O3)2] + NaI'],'الثيوكبريتات تكوّن معقدًا أثبت من معقد النشادر.']]],
+['ag','K2CrO4','#9c2f1e',0,'راسب أحمر طوبي من كرومات الفضة.',['2AgNO3 + K2CrO4 → Ag2CrO4↓ (أحمر طوبي) + 2KNO3'],'اتحاد أيونين Ag⁺ مع CrO₄²⁻ يعطي ملحًا شحيح الذوبان.'],
+['pb','dil. HCl','#f5f5f5',0,'راسب أبيض من PbCl2 يذوب في الماء الساخن وينفصل بالتبريد.',['Pb(NO3)2 + 2HCl → PbCl2↓ (أبيض) + 2HNO3'],'PbCl2 شحيح الذوبان على البارد وتزداد ذوبانيته كثيرًا بالحرارة.',[['سخّن','d',0,'يذوب الراسب في الماء الساخن.',['PbCl2↓ ⇌ PbCl2 (محلول عند التسخين)'],'ارتفاع الحرارة يزيد الذوبانية فيعود الملح للمحلول.']]],
+['pb','KI','#f2d21b',0,'راسب أصفر من PbI2 ينحل بالماء المغلي ويعود بالتبريد بلورات ذهبية متلألئة.',['Pb(NO3)2 + 2KI → PbI2↓ (أصفر ذهبي) + 2KNO3'],'يوديد الرصاص قليل الذوبان على البارد.',[['سخّن','d',0,'يذوب الراسب بالغليان.',['PbI2↓ ⇌ PbI2 (محلول)'],'الحرارة تزيد الذوبانية.'],['برّد','c','#f0b400','تتبلور بلورات صفراء ذهبية متلألئة.',['PbI2 (محلول) ⇌ PbI2↓ (بلورات ذهبية)'],'التبريد يقلل الذوبانية فتتبلور المادة.']]],
+['pb','K2CrO4','#f0d020',0,'راسب أصفر من PbCrO4 لا يذوب في حمض الخليك ويذوب في القواعد.',['Pb(NO3)2 + K2CrO4 → PbCrO4↓ (أصفر) + 2KNO3'],'الرصاص أمفوتيري لذلك يذوب راسبه في القواعد القوية.',[['أضف NaOH','d',0,'يذوب الراسب في القلوي.',['PbCrO4 + 4NaOH → Na2PbO2 + Na2CrO4 + 2H2O'],'تكوين بلمبيت الصوديوم الذائب.']]],
+['hg1','dil. HCl','#f5f5f5',0,'راسب أبيض من Hg2Cl2 يسودّ بإضافة NH4OH.',['Hg2(NO3)2 + 2HCl → Hg2Cl2↓ (أبيض) + 2HNO3'],'كلوريد الزئبقوز شحيح الذوبان جدًا.',[['أضف NH4OH','c','#1a1a1a','يسودّ الراسب لتكوّن زئبق دقيق التجزئة.',['Hg2Cl2 + 2NH4OH → HgNH2Cl↓ + Hg↓ (أسود) + NH4Cl + 2H2O'],'يحدث تفاعل أكسدة واختزال ذاتي (تفاعل تحاكمي) فينفرد الزئبق الأسود.']]],
+['hg2','H2S',['#f0f0f0','#f2e24a','#8a5a2b','#111'],0,'راسب يتدرج: أبيض ← أصفر ← بني ← أسود (HgS).',['HgCl2 + H2S → HgS↓ (أسود) + 2HCl'],'يتكون أولًا كلوروكبريتيد وسيط ثم يتحول إلى HgS الأسود.'],
+['hg2','SnCl2','#f5f5f5',0,'راسب أبيض من Hg2Cl2.',['2HgCl2 + SnCl2 → Hg2Cl2↓ (أبيض) + SnCl4'],'القصدير الثنائي مختزل فيختزل Hg²⁺ إلى Hg⁺.',[['زِد SnCl2','c','#555','يتحول الراسب إلى رمادي/أسود لانفراد الزئبق.',['Hg2Cl2 + SnCl2 → 2Hg↓ (أسود) + SnCl4'],'زيادة المختزل تختزل Hg⁺ إلى فلز الزئبق.']]],
+['cu','NH4OH','#7fb2ff',0,'راسب أزرق باهت يذوب في الزيادة مكوّنًا محلولًا أزرق قاتمًا جدًا.',['CuSO4 + 2NH4OH → Cu(OH)2↓ + (NH4)2SO4'],'يترسب هيدروكسيد النحاسيك أولًا.',[['زِد NH4OH','d','#0b2fa0','يذوب الراسب ويتكون معقد أزرق قاتم.',['Cu(OH)2 + 4NH4OH → [Cu(NH3)4](OH)2 (أزرق قاتم) + 4H2O'],'معقد أيون النحاسيك النشادري شديد اللون وثابت.']]],
+['cu','K4[Fe(CN)6]','#6b3a1e',0,'راسب بني شوكولاتي من حديدوسيانيد النحاسيك.',['2CuSO4 + K4[Fe(CN)6] → Cu2[Fe(CN)6]↓ (بني شوكولاتي) + 2K2SO4'],'تفاعل ترسيب بين Cu²⁺ ومعقد الحديدوسيانيد.'],
+['cd','H2S','#ffe000',0,'راسب أصفر من كبريتيد الكادميوم CdS.',['CdSO4 + H2S → CdS↓ (أصفر) + H2SO4'],'CdS ضعيف الذوبان جدًا ولونه الأصفر مميز للكادميوم.'],
+['bi','Na2[SnO2]','#111',0,'راسب أسود من فلز البزموث دقيق التجزئة.',['2Bi(NO3)3 + 6NaOH + 3Na2[SnO2] → 2Bi↓ (أسود) + 3Na2[SnO3] + 6NaNO3 + 3H2O'],'قصديريت الصوديوم (يُحضَّر طازجًا) مختزل قوي يختزل Bi³⁺ إلى فلز.'],
+['fe2','K3[Fe(CN)6]','#1b2a8a',0,'راسب أزرق قاتم (حديديسيانيد الحديدوز).',['3FeSO4 + 2K3[Fe(CN)6] → Fe3[Fe(CN)6]2↓ (أزرق قاتم) + 3K2SO4'],'تفاعل مميز للكشف عن الحديدوز.'],
+['fe3','NH4OH','#8b3a14',0,'راسب بني محمر هلامي من Fe(OH)3.',['FeCl3 + 3NH4OH → Fe(OH)3↓ (بني محمر) + 3NH4Cl'],'هيدروكسيد الحديديك شحيح الذوبان جدًا.'],
+['fe3','NH4CNS',0,'#a0101a','يتلون المحلول بالأحمر الدموي (ثيوسيانات الحديديك).',['FeCl3 + 3NH4CNS → Fe(CNS)3 (محلول أحمر دموي) + 3NH4Cl'],'تكوّن معقد ذائب شديد اللون، لذلك لا يظهر راسب.'],
+['fe3','K4[Fe(CN)6]','#10286b',0,'راسب أزرق بروسيا قاتم.',['4FeCl3 + 3K4[Fe(CN)6] → Fe4[Fe(CN)6]3↓ (أزرق بروسيا) + 12KCl'],'تفاعل مميز للكشف عن الحديديك.'],
+['al','NaOH','#f2f2f2',0,'راسب أبيض جيلاتيني من Al(OH)3 يذوب في الزيادة.',['Al2(SO4)3 + 6NaOH → 2Al(OH)3↓ (أبيض جيلاتيني) + 3Na2SO4'],'الألومنيوم أمفوتيري.',[['زِد NaOH','d',0,'يذوب الراسب مكوّنًا ألومينات الصوديوم.',['Al(OH)3 + NaOH → NaAlO2 (ألومينات صوديوم ذائبة) + 2H2O'],'السلوك الحمضي لهيدروكسيد الألومنيوم في وسط قلوي.']]],
+['cr','NaOH','#7f9a82',0,'راسب رمادي مخضر من Cr(OH)3 يذوب في الزيادة.',['CrCl3 + 3NaOH → Cr(OH)3↓ (رمادي مخضر) + 3NaCl'],'هيدروكسيد الكروم أمفوتيري.',[['زِد NaOH','d','#2f9a4a','يذوب الراسب مكوّنًا محلول كروميت الصوديوم الأخضر.',['Cr(OH)3 + NaOH → NaCrO2 (محلول أخضر) + 2H2O'],'تكوّن الكروميت الذائب.'],['أضف H2O2 وسخّن','l','#e8d41a','يتحول المحلول إلى الأصفر (كرومات الصوديوم).',['2NaCrO2 + 3H2O2 + 2NaOH → 2Na2CrO4 (محلول أصفر) + 4H2O'],'يؤكسد فوق أكسيد الهيدروجين Cr³⁺ إلى Cr⁶⁺ في صورة كرومات.']]]
+];
+// ===== الواجهة العامة =====
+const secs={lab:'🧪 المحاكي',fl:'🔥 تلوين اللهب',bx:'🔵 خرزة البوراكس',qz:'❓ أسئلة علل'};
+function show(k){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id=='s-'+k));document.querySelectorAll('#sb [data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s==k))}
+$('sb').innerHTML='<h3>الفهرس</h3>'+Object.entries(secs).map(([k,v])=>`<button data-s="${k}" onclick="show('${k}')">${v}</button>`).join('')+'<h3>الكاتيونات (اختصار للمحاكي)</h3>'+Object.entries(C).map(([k,v])=>`<button onclick="show('lab');pick('${k}')">${v[0]} ${f(v[1])}</button>`).join('');
+$('tg').onclick=()=>$('sb').classList.toggle('hide');
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'}));a.download='virtual-chem-lab.html';a.click()};
+// ===== المحاكي =====
+let S={k:null,i:-1,st:-1,lv:45,busy:0,tm:[]};
+const base=()=>(C[S.k]&&C[S.k][2])||'rgba(150,210,255,.22)';
+$('cat').innerHTML=Object.entries(C).map(([k,v])=>`<button data-k="${k}" onclick="pick('${k}')">${v[0]} ${f(v[1])}</button>`).join('');
+function setLv(v){S.lv=v;$('liq').style.height=v+'%';$('cloud').style.height=v+'%'}
+function reset(){S.tm.forEach(clearTimeout);S.tm=[];S.i=-1;S.st=-1;S.busy=0;setLv(45);$('liq').style.background=base();$('ppt').style.transition='none';$('ppt').style.height='0';$('ppt').offsetWidth;$('ppt').style.transition='';$('cloud').style.opacity=0;$('bub').innerHTML='';$('out').innerHTML='';$('nx').style.display='none';$('go').disabled=true;document.querySelectorAll('#rea button').forEach(b=>b.classList.remove('on'))}
+function pick(k){S.k=k;document.querySelectorAll('#cat button').forEach(b=>b.classList.toggle('on',b.dataset.k==k));$('rea').innerHTML=R.map((r,i)=>r[0]==k?`<button onclick="selR(${i},this)">${f(r[1])}</button>`:'').join('');reset();$('out').innerHTML=`<p class="ex">ملح ${C[k][0]}: <span dir="ltr">${f(C[k][1])}</span> — اختر الكاشف ثم اضغط «اسكب الكاشف».</p>`}
+function selR(i,el){if(S.busy)return;S.i=i;S.st=-1;document.querySelectorAll('#rea button').forEach(b=>b.classList.remove('on'));el.classList.add('on');$('go').disabled=false;$('nx').style.display='none';$('ppt').style.height='0';$('cloud').style.opacity=0;setLv(45);$('liq').style.background=base();$('out').innerHTML=''}
+const T=(fn,ms)=>S.tm.push(setTimeout(fn,ms));
+function pour(cb){S.busy=1;const d=$('dropper'),s=$('stream');d.style.opacity=1;T(()=>s.style.height='150px',60);T(()=>setLv(Math.min(S.lv+8,80)),700);T(()=>s.style.height='0px',1400);T(()=>{d.style.opacity=0;S.busy=0;cb()},1900)}
+function showP(c){const a=[].concat(c);$('ppt').style.background=a[0];$('cloud').style.background=a[0];const cl=$('cloud');cl.style.transition='none';cl.style.opacity=.7;cl.offsetWidth;cl.style.transition='opacity 4s';cl.style.opacity=.08;$('ppt').style.height='20%';
+for(let i=0;i<26;i++)T(()=>{const p=document.createElement('i');p.className='pt';p.style.cssText=`left:${8+Math.random()*80}%;top:${100-S.lv}%;background:${a[0]}`;$('tube').appendChild(p);setTimeout(()=>p.remove(),2700)},i*70);
+a.forEach((c,n)=>n&&T(()=>{$('ppt').style.background=c;$('cloud').style.background=c},n*1300))}
+function bubbles(){for(let i=0;i<22;i++)T(()=>{const b=document.createElement('i');b.className='bb';b.style.left=(10+Math.random()*75)+'%';$('bub').appendChild(b);setTimeout(()=>b.remove(),2100)},i*130)}
+function add(o,e,x,h){$('out').insertAdjacentHTML('beforeend',`<div class="blk">${h?`<b>${h}</b>`:''}<p class="ob">👁 ${f(o)}</p><div class="eq">${e.map(f).join('<br>')}</div><p class="ex">💡 ${f(x)}</p></div>`)}
+function upd(){const r=R[S.i],t=r[7]&&r[7][S.st+0];$('nx').style.display=t?'':'none';if(t)$('nx').textContent=f(t[0]).replace(/<[^>]+>/g,'')}
+$('go').onclick=()=>{if(S.busy||S.i<0)return;const r=R[S.i];$('go').disabled=true;pour(()=>{if(r[3])$('liq').style.background=r[3];if(r[2])showP(r[2]);if(/H2S/.test(r[1]))bubbles();add(r[4],r[5],r[6],'المشاهدة والتفاعل');S.st=0;upd()})};
+$('nx').onclick=()=>{if(S.busy)return;const r=R[S.i],t=r[7][S.st];$('nx').style.display='none';const dir=/^(سخّن|برّد)/.test(t[0]);const run=()=>{if(t[1]=='d'){$('ppt').style.height='0';$('cloud').style.opacity=0;$('liq').style.background=t[2]||'rgba(150,210,255,.22)'}else if(t[1]=='c')showP(t[2]);else $('liq').style.background=t[2];if(dir&&/^سخّن/.test(t[0]))bubbles();add(t[3],t[4],t[5],t[0]);S.st++;upd()};dir?run():pour(run)};
+$('rs').onclick=()=>{reset();if(S.k)pick(S.k)};
+// ===== اللهب =====
+const FL=[['الصوديوم','Na<sup>+</sup>','#ffc21a',null,'أصفر ذهبي لامع','يمتصّ الزجاج الأزرق الأصفر فيختفي لون الصوديوم تقريبًا (لذلك تُستعمل لإخفائه).'],['البوتاسيوم','K<sup>+</sup>','#b388ff','#e0113c','بنفسجي باهت','يظهر لون البوتاسيوم قرمزيًا أصيلًا.'],['الكالسيوم','Ca<sup>2+</sup>','#e0502a','#9de26a','أحمر طوبي','يظهر أخضر فاتحًا.'],['الاسترانشيوم','Sr<sup>2+</sup>','#e0143c','#e0143c','قرمزي','يبقى قرمزيًا (دون تغيّر جوهري).'],['الباريوم','Ba<sup>2+</sup>','#a6dc6a','#7fcf9a','أخضر باهت','يبقى أخضر باهتًا مائلًا للزرقة.']];
+let fi=-1,co=0;const cx=$('fc').getContext('2d');
+$('fe').innerHTML=FL.map((e,i)=>`<button onclick="fi=${i};ftxt()">${e[0]} ${f(e[1])}</button>`).join('')+'<button onclick="fi=-1;ftxt()">بدون عينة</button>';
+function ftxt(){const e=FL[fi];$('ft').innerHTML=e?`<b>${e[0]}:</b> ${co?e[5]:'لون اللهب: '+e[4]}`:'لهب بنزن غير مضيء (أزرق باهت).'}
+$('co').onclick=()=>{co=!co;$('co').textContent='🔷 زجاجة الكوبلت: '+(co?'مُفعّلة':'مُعطّلة');$('co').classList.toggle('on',co);ftxt()};
+function frame(t){cx.clearRect(0,0,300,340);const e=FL[fi];let col='#4aa0ff',on=!!e;if(e)col=co?(e[3]||'#2a3a8a'):e[2];const dim=e&&co&&!e[3];
+const g=cx.createRadialGradient(150,190,5,150,190,170);g.addColorStop(0,col+(on&&!dim?'88':'33'));g.addColorStop(1,'rgba(0,0,0,0)');cx.fillStyle=g;cx.fillRect(0,0,300,340);
+const top=105+Math.sin(t/70)*5+Math.sin(t/37)*3;cx.beginPath();cx.moveTo(150,top);cx.bezierCurveTo(205,175,195,270,150,285);cx.bezierCurveTo(105,270,95,175,150,top);
+const og=cx.createLinearGradient(0,top,0,285);og.addColorStop(0,col+(on&&!dim?'dd':'55'));og.addColorStop(1,'#2a6bff99');cx.fillStyle=og;cx.fill();
+cx.beginPath();cx.moveTo(150,205+Math.sin(t/55)*4);cx.bezierCurveTo(170,230,168,270,150,285);cx.bezierCurveTo(132,270,130,230,150,205);cx.fillStyle='#4a8cffcc';cx.fill();
+cx.fillStyle='#8892a6';cx.fillRect(138,285,24,42);cx.fillStyle='#5b6478';cx.fillRect(108,325,84,12);
+if(co){cx.fillStyle='rgba(30,50,200,.45)';cx.fillRect(40,60,220,240);cx.strokeStyle='#7fa0ff';cx.strokeRect(40,60,220,240)}
+requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+// ===== البوراكس =====
+const BX=[['النحاس','Cu','#27c2a8','rgba(150,60,30,.85)','أخضر مزرق','بني محروق/أحمر (أو عديم اللون)'],['الحديد','Fe','#d9a21b','#8fd48a','أصفر/بني','أخضر فاتح'],['الكروم','Cr','#b8c92b','#1f9e5b','أصفر زمردي','أخضر زمردي'],['المنجنيز','Mn','#6a4cc0','rgba(240,220,235,.4)','بنفسجي مزرق','عديم اللون أو وردي باهت'],['الكوبلت','Co','#1b3fa8','#1b3fa8','أزرق غامق','أزرق غامق (في اللهبين)']];
+let bi=-1,red=0;
+$('be').innerHTML=BX.map((e,i)=>`<button onclick="bi=${i};bupd()">${e[0]} (${e[1]})</button>`).join('');
+function bupd(){const e=BX[bi];$('ox').classList.toggle('on',!red);$('rd').classList.toggle('on',red);if(!e)return;$('bead').setAttribute('fill',red?e[3]:e[2]);$('bt').innerHTML=`<b>${e[0]}</b> في اللهب ${red?'المختزل':'المؤكسد'}: ${red?e[5]:e[4]}`}
+$('ox').onclick=()=>{red=0;bupd()};$('rd').onclick=()=>{red=1;bupd()};$('ht').onclick=()=>{$('bs').classList.toggle('hot');$('ht').classList.toggle('on')};
+// ===== بطاقات علل =====
+const Q=[['لماذا جميع الجواهر المرسبة إلكتروليتات ضعيفة عدا المجموعة الأولى؟','لأن حاصل إذابة (SP) كلوريدات المجموعة الأولى منخفض جدًا مقارنة بالمجاميع الأخرى، فتترسب بسهولة دون الحاجة لكواشف ضعيفة.'],['لماذا لا يوجد جوهر معدل للمجموعة الأولى؟','لأن المجموعة الأولى هي الوحيدة التي تترسب على صورة كلوريدات ولا ينافسها في ذلك مجاميع أخرى لانخفاض SP لها، فلا داعي لوجود جوهر معدل.'],['لماذا يُستخدم HCl المخفف (وليس المركز) في ترسيب المجموعة الأولى؟ (تكملة افتراضية، راجع كتابك)','HCl المخفف يوفر أيون Cl⁻ بتركيز كافٍ لتجاوز SP، أما الزيادة الكبيرة أو المركز فتذيب الراسب بتكوين معقدات كلورية ذائبة مثل [PbCl4]²⁻.'],['لماذا يذوب AgCl في NH4OH؟','لأن Ag⁺ يكوّن معقد [Ag(NH3)2]⁺ الثابت فينخفض تركيز Ag⁺ الحر عن حد الإذابة فيذوب الراسب.']];
+$('cards').innerHTML=Q.map(q=>`<div class="card" tabindex="0" onclick="this.classList.toggle('fl')"><div><p>${f(q[0])}</p><p>${f(q[1])}</p></div></div>`).join('');
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
